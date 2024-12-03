@@ -44,8 +44,7 @@ function App() {
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Home user={user}/>} />
-          <Route path="/login" element={<Login />} />
+          {user ? <Route path="/" element={<Home user={user}/>} /> : <Route path="/login" element={<Login />} />}
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
