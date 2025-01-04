@@ -2,11 +2,17 @@ import { format } from 'date-fns';
 import { supabase } from '../supabaseClient';
 import { useEffect, useState } from 'react';
 import { AiOutlineDelete } from "react-icons/ai";
-export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
+import { LuFilter } from "react-icons/lu";
+import { IoMdClose } from "react-icons/io";
+export default function TransactionList({ isAdded, setIsAdded, setIsDeleted }) {
   const [transactionData, setTransactionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const [deleteId,setDeleteId] = useState('');
+  const [deleteId, setDeleteId] = useState('');
+  const [filter, setFilter] = useState('name');
+  const [isFilterOn, setIsFilterOn] = useState(false);
+  const [namefilter, setNameFilter] = useState('');
+  const [monthfilter, setMonthFilter] = useState('');
 
   async function fetchTransaction() {
     const { data: userData, error } = await supabase.auth.getUser();
@@ -31,12 +37,12 @@ export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
     setIsAdded(false)
   }, [isAdded])
 
-  function HandleDeleteButtonOnClick(id){
+  function HandleDeleteButtonOnClick(id) {
     setIsOpen(true);
     setDeleteId(id);
   }
   async function HandleDelete() {
-    const { error,data } = await supabase
+    const { error, data } = await supabase
       .from('transaction')
       .delete("*")
       .eq('id', deleteId)
@@ -50,6 +56,23 @@ export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
     fetchTransaction()
     setIsOpen(false)
     setIsDeleted(true)
+  }
+
+  function HandleNameFilterSearch() {
+    const filteredData = transactionData.filter((item) =>
+      item.description.toLowerCase().includes(namefilter.toLowerCase())
+    );
+    setTransactionData(filteredData);
+  }
+  function HandleMonthFilterSearch() {
+    const filteredData = transactionData.filter((item) => {
+      const month = item.date.slice(5, 7);
+      return month === monthfilter && item.description.toLowerCase().includes(namefilter.toLowerCase())
+    })
+    setTransactionData(filteredData);
+  }
+  function HandleClearFilter(){
+    fetchTransaction(); 
   }
 
 
@@ -71,6 +94,9 @@ export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
       </div>
     )
   }
+
+  // loading 
+
   if (!transactionData) {
     return (
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
@@ -90,15 +116,117 @@ export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
       </div>
     );
   }
+
+  //main content
+
   return (
     <>
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-8">
-          <h2 className="text-2xl font-bold text-white">Recent Transactions</h2>
-          <p className="text-purple-100 mt-2">Your transaction history</p>
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-8 flex flex-row items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Recent Transactions</h2>
+            <p className="text-purple-100 mt-2">Your transaction history</p>
+          </div>
+          <div className='flex justify-end items-center'>
+            <LuFilter color='white' size={20} className='cursor-pointer' onClick={() => setIsFilterOn(!isFilterOn)} />
+          </div>
         </div>
 
-        <div className="p-8">
+        {isFilterOn &&
+          <div className="max-w-xl w-full md:h-44 h-72 mx-auto bg-white rounded-xl overflow-hidden shadow-lg ">
+            <div className='pt-4 pr-4 flex justify-end'>
+              <IoMdClose size={20} className='cursor-pointer' onClick={() => setIsFilterOn(!isFilterOn)} />
+            </div>
+            <div className="flex gap-2 p-2 justify-center">
+              <div>
+                <input
+                  className="peer sr-only"
+                  value="name"
+                  name="filter"
+                  id="name"
+                  type="radio"
+                  onClick={(e) => {
+                    console.log(e.target.value);
+                    setFilter(e.target.value)
+                  }}
+                />
+                <div
+                  className="flex h-10 w-24 cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-gray-300 bg-gray-50 p-1 transition-transform duration-150 hover:border-purple-400 active:scale-95 peer-checked:border-purple-500 peer-checked:shadow-md peer-checked:shadow-purple-400"
+                >
+                  <label
+                    className="flex cursor-pointer items-center justify-center text-sm text-gray-500 peer-checked:text-purple-500"
+                    htmlFor="name"
+                  >
+                    Name
+                  </label>
+                </div>
+              </div>
+              <div>
+                <input
+                  className="peer sr-only"
+                  value="date"
+                  name="filter"
+                  id="date"
+                  type="radio"
+                  onClick={(e) => {
+                    console.log(e.target.value);
+                    setFilter(e.target.value)
+                  }}
+                />
+                <div
+                  className="flex h-10 w-24 cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-gray-300 bg-gray-50 p-1 transition-transform duration-150 hover:border-indigo-400 active:scale-95 peer-checked:border-indigo-500 peer-checked:shadow-md peer-checked:shadow-indigo-400"
+                >
+                  <label
+                    className="flex cursor-pointer items-center justify-center text-sm text-gray-500 peer-checked:text-indigo-500"
+                    htmlFor="date"
+                  >
+                    Month
+                  </label>
+                </div>
+              </div>
+              <div>
+                <button className="bg-purple-700 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded" onClick={() => HandleClearFilter()}>Clear Filter</button>
+              </div>
+            </div>
+            {
+              filter === 'name' ? (
+                <div className='flex justify-center items-center mt-5 '>
+                  <input type="text" placeholder="Search by name" className="w-1/2 px-4 py-2 ml-5 mr-5 border rounded-sm focus:outline-none shadow-lg bg-gray-50" onChange={(e) => setNameFilter(e.target.value)} />
+                  <div>
+                    <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded" onClick={() => HandleNameFilterSearch()}>Search</button>
+                  </div>
+                </div>
+              ) : (
+                <div className='flex justify-center items-center mt-5 '>
+                  <div className='flex gap-2 md:flex-row flex-col'>
+                  <input type="text" placeholder="Search by name" className="md:w-1/2 w-full px-4 py-2  border rounded-sm focus:outline-none shadow-lg bg-gray-50 text-gray-500" onChange={(e) => setNameFilter(e.target.value)} />
+                    <select className="w-full bg-gray-50 rounded-sm border px-2 py-2 focus:outline-none shadow-lg text-gray-500" id="country" onChange={(e) => setMonthFilter(e.target.value)}>
+                      <option value="">Select a month</option>
+                      <option value="01">January</option>
+                      <option value="02">February</option>
+                      <option value="03">March</option>
+                      <option value="04">April</option>
+                      <option value="05">May</option>
+                      <option value="06">June</option>
+                      <option value="07">July</option>
+                      <option value="08">August</option>
+                      <option value="09">September</option>
+                      <option value="10">October</option>
+                      <option value="11">November</option>
+                      <option value="12">December</option>
+                    </select>
+                    <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded" onClick={() => HandleMonthFilterSearch()}>Search</button>
+                  </div>
+                </div>
+              )
+
+            }
+
+          </div>
+
+        }
+
+        <div className="px-8 py-4">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -124,7 +252,7 @@ export default function TransactionList({ isAdded, setIsAdded,setIsDeleted }) {
                     </td>
                     <td className="py-3 px-4 text-sm text-right font-medium">
                       <span className={transaction.type === 'income' ? 'text-violet-600' : 'text-pink-600'}>
-                        ${transaction.amount.toFixed(2)}
+                        ₹{transaction.amount.toFixed(2)}
                       </span>
                     </td>
                     <td className="py-3 px-4">

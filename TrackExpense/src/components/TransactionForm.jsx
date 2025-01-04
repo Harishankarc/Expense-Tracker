@@ -94,7 +94,7 @@ export default function TransactionForm({ user,setIsAdded }) {
 
         <FormInput
           id="amount"
-          label="Amount ($)"
+          label="Amount (₹)"
           type="number"
           value={formData.amount}
           onChange={handleChange('amount')}

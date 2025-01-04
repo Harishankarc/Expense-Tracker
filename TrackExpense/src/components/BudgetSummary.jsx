@@ -72,7 +72,7 @@ export default function BudgetSummary({isAdded,setIsAdded,isDeleted}) {
             type === 'income' ? 'text-violet-600' : 
             type === 'expense' ? 'text-pink-600' : 'text-indigo-600'
           }`}>
-            ${amount.toFixed(2)}
+            ₹{amount.toFixed(2)}
           </p>
         </div>
       </div>
