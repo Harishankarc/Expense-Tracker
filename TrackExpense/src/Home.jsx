@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
 export default function Home({user}) {
   const [isAdded,setIsAdded] = useState(false)
+  const [isDeleted,setIsDeleted] = useState(false)
   const navigate = useNavigate();     
   const [transactions, setTransactions] = useState([]);
   const handleAddTransaction = (transaction) => {
@@ -46,8 +47,8 @@ export default function Home({user}) {
             <TransactionForm onAddTransaction={handleAddTransaction} user={user} setIsAdded={setIsAdded}/>
           </div>
           <div className="space-y-8">
-            <BudgetSummary isAdded={isAdded} setIsAdded={setIsAdded}/>
-            <TransactionList isAdded={isAdded} setIsAdded={setIsAdded}/>
+            <BudgetSummary isAdded={isAdded} setIsAdded={setIsAdded} isDeleted={isDeleted}/>
+            <TransactionList isAdded={isAdded} setIsAdded={setIsAdded} setIsDeleted={setIsDeleted}/>
           </div>
         </div>
       </div>

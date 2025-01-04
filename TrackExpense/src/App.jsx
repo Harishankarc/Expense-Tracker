@@ -5,6 +5,7 @@ import Login from './Auth/Login'
 import Register from './Auth/Register'
 import { useEffect,useState } from 'react'
 import { supabase } from './supabaseClient'
+
 function App() {
   const [user, setUser] = useState(null);
 

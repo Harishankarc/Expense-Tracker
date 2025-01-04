@@ -4,7 +4,7 @@ import { useState,useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function BudgetSummary({isAdded,setIsAdded}) {
+export default function BudgetSummary({isAdded,setIsAdded,isDeleted}) {
   const [transactionData, setTransactionData] = useState(null);
   useEffect(()=>{
     async function fetchTransaction(){
@@ -27,7 +27,7 @@ export default function BudgetSummary({isAdded,setIsAdded}) {
     }
     fetchTransaction()
     setIsAdded(false)
-  },[isAdded])
+  },[isAdded,isDeleted])
   let income,expenses,balance = 0;
   if(transactionData){
     income = transactionData
